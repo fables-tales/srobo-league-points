@@ -10,6 +10,7 @@ class ComputesLeagueScores
   end
 
   def add_team(team_name, score)
+    raise "Too many teams" if @scores.keys.length == 4
     @scores[team_name] = score
   end
 
