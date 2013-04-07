@@ -2,6 +2,11 @@ require "json"
 class ComputesLeagueScores
   def initialize
     @scores = {}
+    @i = 4
+    @score = @i
+    @to_push = []
+    @score_hash = {}
+    @seen = 0
   end
 
   def add_team(team_name, score)
@@ -9,32 +14,50 @@ class ComputesLeagueScores
   end
 
   def league_scores
-    i = 4
-    score = i
-    to_push = []
-    score_hash = {}
-    seen = 0
-    while seen < ordered_teams.length
-      current_score = @scores[ordered_teams[seen]]
-      to_push << ordered_teams[seen]
-      if current_score == @scores[ordered_teams[seen+1]]
-        score = score + (i - 1)
+    while @seen < ordered_teams.length
+      @to_push << current_team
+
+      if current_score == next_score
+        @score = @score + (@i - 1)
       else
-        average = score * 1.0 / to_push.length
-        to_push.each do |team|
-          score_hash[team] = average
-        end
-        to_push = []
-        score = i-1
+        fill_score_hash_and_clear_to_push
+        @score = @i - 1
       end
-      i = i - 1
-      seen += 1
+      @i = @i - 1
+      @seen += 1
     end
 
-    return score_hash
+    return @score_hash
   end
 
   private
+
+  def fill_score_hash_and_clear_to_push
+    @to_push.each do |team|
+      @score_hash[team] = average
+    end
+    @to_push = []
+  end
+
+  def current_score
+    @scores[current_team]
+  end
+
+  def next_score
+    @scores[next_team]
+  end
+
+  def average
+    @score * 1.0 / @to_push.length
+  end
+
+  def current_team
+    ordered_teams[@seen]
+  end
+
+  def next_team
+    ordered_teams[@seen+1]
+  end
 
   def ordered_teams
     @scores.keys.sort {|x,y| @scores[x] <=> @scores[y]}.reverse
